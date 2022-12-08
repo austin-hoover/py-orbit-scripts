@@ -1,1 +1,0 @@
-This study compares the beam evolution in the BTF using an initial RFQ-simulation-generated bunch with/without removing the initial correlations.

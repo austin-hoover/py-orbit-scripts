@@ -1,1 +1,0 @@
-This study investigates the beam evolution in the early MEBT, particularly the formation of the characteristic "s" shape in x-x' and y-y' which leads to hollow spatial distributions.
