@@ -1,4 +1,4 @@
-"""Make sure ORBIT-calculated second-order moments are correct."""
+"""Test that ORBIT-calculated second-order moments are correct."""
 from __future__ import print_function
 from pprint import pprint
 
@@ -8,44 +8,27 @@ from bunch import Bunch
 from bunch import BunchTwissAnalysis
 
 
-# Choose mean and covariance.
-np.random.seed(0)
-decimals = 3
+state = np.random.RandomState(15520)
+decimals = 3  # for rounding
 
-cov = np.identity(6)
-for (i, j) in [(0, 1), (2, 3), (4, 5), (0, 2), (0, 4), (2, 5)]:
-    cov[i, j] = cov[j, i] = 0.9 * np.random.uniform(-1.0, 1.0)
-cov = 100.0 * np.around(cov, decimals)
+# Generate covariance matrix.
+_cov = np.identity(6)
+for (i, j) in [(0, 1), (2, 3), (4, 5), (0, 2)]:
+    # Note: x-dE (0-5) or y-dE (2-5) correlations will change the Twiss
+    # parameters computed by ORBIT. This is because the ORBIT calculation
+    # accounts for dispersion.
+    _cov[i, j] = _cov[j, i] = np.random.uniform(-0.8, 0.8)
+_cov = 100.0 * _cov
 
-mean = np.zeros(6)
-for i in [0, 3, 5]:
-    mean[i] = np.random.uniform(3)
-mean = np.around(mean, decimals)
-
-print("cov theory:")
-print(cov)
-print("mean theory:")
-print(mean)
-
-# Generate data.
-X = np.random.multivariate_normal(mean, cov, size=100000)
-print("cov numpy:")
-np_cov = np.cov(X.T)
-print(np.around(np_cov, decimals=3))
-print("mean numpy:")
-print(np.around(np.mean(X, axis=0), decimals))
-
-# Recompute mean and covariance from bunch.
+# Generate bunch.
+X = np.random.multivariate_normal(np.zeros(6), _cov, size=100000)
 bunch = Bunch()
 for (x, xp, y, yp, z, dE) in X:
     bunch.addParticle(x, xp, y, yp, z, dE)
+    
+# Compute second-order moments
 bunch_twiss_analysis = BunchTwissAnalysis()
 bunch_twiss_analysis.analyzeBunch(bunch)
-
-mean = np.array([bunch_twiss_analysis.getAverage(i) for i in range(6)])
-print("mean orbit:")
-print(np.around(mean, decimals))
-
 order = 2
 dispersion_flag = 0
 emit_norm_flag = 0
@@ -54,19 +37,36 @@ cov = np.zeros((6, 6))
 for i in range(6):
     for j in range(6):
         cov[i, j] = bunch_twiss_analysis.getCorrelation(i, j)
-print("cov orbit:")
-pprint(np.around(cov, decimals))
-
-print("numpy | orbit | absolute difference")
-dims = ["x", "xp", "y", "yp", "z", "dE"]
+np_cov = np.cov(X.T)
+        
+# Print comparison
+print('Second-order moments')
+print('--------------------')
+dims = ["x", "x'", "y", "y'", "z", "z'"]
 for i in range(6):
     for j in range(6):
-        print(
-            "{}-{}: {:.3f} | {:.3f} | {:.3e}".format(
-                dims[i],
-                dims[j],
-                np_cov[i, j],
-                cov[i, j],
-                np.abs(np_cov[i, j] - cov[i, j]),
-            )
-        )
+        print("<{}{}>:".format(dims[i], dims[j]))
+        print("    numpy = {}".format(np_cov[i, j]))
+        print("    orbit = {}".format(cov[i, j]))
+print()
+print('Twiss parameters')
+print('----------------')
+for i, dim in enumerate(['x', 'y', 'z']):
+    j = 2 * i
+    np_eps = np.sqrt(np_cov[j, j] * np_cov[j + 1, j + 1] - np_cov[j, j + 1]**2)
+    np_beta = np_cov[j, j] / np_eps
+    np_alpha = -np_cov[j, j + 1] / np_eps
+    np_gamma = np_cov[j + 1, j + 1] / np_eps
+    alpha, beta, gamma, eps = bunch_twiss_analysis.getTwiss(i)
+    print('alpha_{}:'.format(dim))
+    print('    numpy = {}'.format(np_alpha))
+    print('    orbit = {}'.format(alpha))
+    print('beta_{}:'.format(dim))
+    print('    numpy = {}'.format(np_beta))
+    print('    orbit = {}'.format(beta))
+    print('gamma_{}:'.format(dim))
+    print('    numpy = {}'.format(np_gamma))
+    print('    orbit = {}'.format(gamma))
+    print('eps_{}:'.format(dim))
+    print('    numpy = {}'.format(np_eps))
+    print('    orbit = {}'.format(eps))
