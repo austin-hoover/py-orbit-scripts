@@ -25,7 +25,7 @@ X = np.random.multivariate_normal(np.zeros(6), _cov, size=100000)
 bunch = Bunch()
 for (x, xp, y, yp, z, dE) in X:
     bunch.addParticle(x, xp, y, yp, z, dE)
-    
+
 # Compute second-order moments
 bunch_twiss_analysis = BunchTwissAnalysis()
 bunch_twiss_analysis.analyzeBunch(bunch)
@@ -38,10 +38,10 @@ for i in range(6):
     for j in range(6):
         cov[i, j] = bunch_twiss_analysis.getCorrelation(i, j)
 np_cov = np.cov(X.T)
-        
+
 # Print comparison
-print('Second-order moments')
-print('--------------------')
+print("Second-order moments")
+print("--------------------")
 dims = ["x", "x'", "y", "y'", "z", "z'"]
 for i in range(6):
     for j in range(6):
@@ -49,24 +49,24 @@ for i in range(6):
         print("    numpy = {}".format(np_cov[i, j]))
         print("    orbit = {}".format(cov[i, j]))
 print()
-print('Twiss parameters')
-print('----------------')
-for i, dim in enumerate(['x', 'y', 'z']):
+print("Twiss parameters")
+print("----------------")
+for i, dim in enumerate(["x", "y", "z"]):
     j = 2 * i
-    np_eps = np.sqrt(np_cov[j, j] * np_cov[j + 1, j + 1] - np_cov[j, j + 1]**2)
+    np_eps = np.sqrt(np_cov[j, j] * np_cov[j + 1, j + 1] - np_cov[j, j + 1] ** 2)
     np_beta = np_cov[j, j] / np_eps
     np_alpha = -np_cov[j, j + 1] / np_eps
     np_gamma = np_cov[j + 1, j + 1] / np_eps
     alpha, beta, gamma, eps = bunch_twiss_analysis.getTwiss(i)
-    print('alpha_{}:'.format(dim))
-    print('    numpy = {}'.format(np_alpha))
-    print('    orbit = {}'.format(alpha))
-    print('beta_{}:'.format(dim))
-    print('    numpy = {}'.format(np_beta))
-    print('    orbit = {}'.format(beta))
-    print('gamma_{}:'.format(dim))
-    print('    numpy = {}'.format(np_gamma))
-    print('    orbit = {}'.format(gamma))
-    print('eps_{}:'.format(dim))
-    print('    numpy = {}'.format(np_eps))
-    print('    orbit = {}'.format(eps))
+    print("alpha_{}:".format(dim))
+    print("    numpy = {}".format(np_alpha))
+    print("    orbit = {}".format(alpha))
+    print("beta_{}:".format(dim))
+    print("    numpy = {}".format(np_beta))
+    print("    orbit = {}".format(beta))
+    print("gamma_{}:".format(dim))
+    print("    numpy = {}".format(np_gamma))
+    print("    orbit = {}".format(gamma))
+    print("eps_{}:".format(dim))
+    print("    numpy = {}".format(np_eps))
+    print("    orbit = {}".format(eps))
