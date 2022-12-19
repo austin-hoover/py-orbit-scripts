@@ -12,13 +12,15 @@ import btfsim.bunch.bunchUtilities as butil
 
 
 # 1st emit, 35 mA, Snapshot_20200831_155501.mstate
-xfile = 'data/emittance/2020-09-02/emittance-data-x-20200902-1599057774224.csv'
-yfile = 'data/emittance/2020-09-02/emittance-data-y-20200902-1599060458388.csv'
-zfile = 'data/emittance/2020-08-27/BSM-2d_02-Sep-2020_16_08_27-emittance-z-dE.csv' # core
+xfile = "data/emittance/2020-09-02/emittance-data-x-20200902-1599057774224.csv"
+yfile = "data/emittance/2020-09-02/emittance-data-y-20200902-1599060458388.csv"
+zfile = (
+    "data/emittance/2020-08-27/BSM-2d_02-Sep-2020_16_08_27-emittance-z-dE.csv"  # core
+)
 threshold = 0.01
 
-suffix = '200K'
-out_bunch_filename = 'data/bunch/2Dx3_200902_HZ04_34mA_{}'.format(suffix)
+suffix = "200K"
+out_bunch_filename = "data/bunch/2Dx3_200902_HZ04_34mA_{}".format(suffix)
 
 
 ####################################################################################
@@ -26,31 +28,38 @@ out_bunch_filename = 'data/bunch/2Dx3_200902_HZ04_34mA_{}'.format(suffix)
 ####################################################################################
 
 beam_current = 0.034  # [A]
-bunch_frequency= 402.5e6  # [Hz]
+bunch_frequency = 402.5e6  # [Hz]
 nParticles = 0.2e6
 
-ekin = 0.0025 # in [GeV]
-mass = 0.939294 # in [GeV]
-gamma = (mass + ekin)/mass
-beta = np.sqrt(gamma*gamma - 1.0)/gamma
+ekin = 0.0025  # in [GeV]
+mass = 0.939294  # in [GeV]
+gamma = (mass + ekin) / mass
+beta = np.sqrt(gamma * gamma - 1.0) / gamma
 
-method = 'cdf'
+method = "cdf"
 
 sim = main.simBTF()
 
 # -- generate 2D bunch out of emittance measurements
-sim.initBunch(gen="2dx3",xfile=xfile,yfile=yfile,zfile=zfile,threshold=threshold,
-              nparts=nParticles,current=beam_current)
+sim.initBunch(
+    gen="2dx3",
+    xfile=xfile,
+    yfile=yfile,
+    zfile=zfile,
+    threshold=threshold,
+    nparts=nParticles,
+    current=beam_current,
+)
 
 sim.bunch_in.dumpBunch(out_bunch_filename)
 
 # -- analyze bunch
 bcalc = butil.bunchCalculation(sim.bunch_in)
-twissx = bcalc.Twiss(plane='x')
+twissx = bcalc.Twiss(plane="x")
 print(twissx)
-twissy = bcalc.Twiss(plane='y')
+twissy = bcalc.Twiss(plane="y")
 print(twissy)
-twissz = bcalc.Twiss(plane='z')
+twissz = bcalc.Twiss(plane="z")
 print(twissz)
 
 
@@ -80,13 +89,11 @@ print(twissz)
 # sim.tracker.writehist(filename=hist_out_name)
 
 # -- run forwards to VS06
-#out_bunch_name= '2Dx3_190326_190724_FC12_26mA_200k'
-#start = "MEBT:HZ04"
-#stop = "MEBT:FC12"
-#sim.run(start=start, stop=stop, out = out_bunch_name)
+# out_bunch_name= '2Dx3_190326_190724_FC12_26mA_200k'
+# start = "MEBT:HZ04"
+# stop = "MEBT:FC12"
+# sim.run(start=start, stop=stop, out = out_bunch_name)
 #
 ## -- save output
-#hist_out_name = 'data/btf_hist_toFC12.txt'
-#sim.tracker.writehist(filename=hist_out_name)
-
-
+# hist_out_name = 'data/btf_hist_toFC12.txt'
+# sim.tracker.writehist(filename=hist_out_name)
